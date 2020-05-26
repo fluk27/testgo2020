@@ -1,13 +1,15 @@
 package routes
 
 import (
+	"os"
+
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
 func init() {
+	port:=os.Getenv("PORT")
 	e := echo.New()
 	UserRoute(e)
-	e.Use(middleware.Logger())
-	e.Logger.Fatal(e.Start(":8000"))
+
+	e.Logger.Fatal(e.Start(":"+port))
 }

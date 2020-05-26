@@ -1,18 +1,19 @@
 package routes
 
 import (
-	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
-// all end about user
+//UserRoute is all end about user
 func UserRoute(route *echo.Echo) {
 	userGroup := route.Group("/user")
+	userGroup.Use(middleware.Logger())
 	userGroup.POST("/login", login)
 	// userGroup.POST("/register")
 	// userGroup.PUT("/editDataPerson")
@@ -23,26 +24,30 @@ func login(c echo.Context) error {
 	password := c.FormValue("password")
 	if username == "peewlaom" && password == "Ws0844038001" {
 		log.Println("logined by user")
-		res, err := http.Post("https://notify-api.line.me/api/notify",
-			"application/x-www-form-urlencoded",
-			bytes.NewBuffer([]byte(`your query`)))
-		if err != nil {
+		url := "https://notify-api.line.me/api/notify"
+		method := "POST"
 
-		}
+		payload := strings.NewReader("message=I'm programmer")
+
 		client := &http.Client{}
-		resp, err := client.Do(res)
-		if err != nil {
-			panic(err)
-		}
-		defer resp.Body.Close()
+		req, err := http.NewRequest(method, url, payload)
 
-		fmt.Println("response Status:", resp.Status)
-		fmt.Println("response Headers:", resp.Header)
-		body, _ := ioutil.ReadAll(resp.Body)
-		fmt.Println("response Body:", string(body))
-		res.Header.Set("Authorization", "Bearer zZhHLegDUVgZg06h9oSM33h7uZj7deicsCVRvbxOnWl")
+		if err != nil {
+			fmt.Println(err)
+		}
+		// req, err := http.PostForm(url, url.Values{"key": {"Value"}, "id": {"123"}})
+		req.Header.Add("Authorization", "Bearer zZhHLegDUVgZg06h9oSM33h7uZj7deicsCVRvbxOnWl")
+		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+		res, err := client.Do(req)
+		if err != nil {
+			// return nil, err
+		}
+		defer res.Body.Close()
+		// body, err := ioutil.ReadAll(res.Body)
+
+		// fmt.Println(string(body))
 		return c.String(http.StatusOK, "logined")
-	} else {
-		return c.JSON(http.StatusOK, map[string]string{"masseage": "login failed"})
 	}
+	return c.JSON(http.StatusOK, map[string]string{"masseage": "login failed"})
 }
