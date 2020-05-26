@@ -27,7 +27,7 @@ func login(c echo.Context) error {
 		url := "https://notify-api.line.me/api/notify"
 		method := "POST"
 
-		payload := strings.NewReader("message=I'm programmer")
+		payload := strings.NewReader("message=I'm miss P' Bew")
 
 		client := &http.Client{}
 		req, err := http.NewRequest(method, url, payload)
