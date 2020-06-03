@@ -1,2 +1,5 @@
 /tmp
 dockerfile
+privateKey.pem
+publicKey.pem
+/models/config_DB.go
