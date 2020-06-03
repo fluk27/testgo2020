@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/peewlaom/testgo/services"
 )
 
+// User is all fuction manager user
 type User struct {
 }
 
@@ -23,9 +26,12 @@ func (u User) Login(c echo.Context) error {
 	if username == "peewlaom" && password == "Ws0844038001" {
 		log.Println("logined by user")
 		// u.sendMessageToLineNoutify("I cannot forget you remember me")
-		service:=services.RSAKey{}
-		 go service.GenerateRSAKey(2048)
+		service := services.RSAKey{}
+		service.GenerateRSAKey(2048)
+		fmt.Println(filepath.Dir("/testgo/privateKey.pe"))
 		// service.ReadPemFile()
+
+
 		return c.String(http.StatusOK, "logined")
 	}
 	return c.JSON(http.StatusOK, map[string]string{"masseage": "login failed"})

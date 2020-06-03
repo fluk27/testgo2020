@@ -8,10 +8,12 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type ManagerSql struct {
+// ManagerSQL is all fuction manager MySQL
+type ManagerSQL struct {
 }
 
-func (ManagerSql) ConnectSql() {
+//ConnectSQL is function connect to MySQL
+func (ManagerSQL) ConnectSQL() {
 	db, err := sql.Open("mysql", "root:keep1234@/costume")
 	if err != nil {
 		log.Fatalln("err from sql:", err)

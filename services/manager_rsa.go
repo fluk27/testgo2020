@@ -9,23 +9,21 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"time"
 )
 
+// RSAKey is all fuction use RSA
 type RSAKey struct{}
 
-// GenerateRSAKey
+// GenerateRSAKey is GenerateRSAKey
 func (rsak RSAKey) GenerateRSAKey(bits int) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
 	if err != nil {
 		// return nil, err
 	}
-
-	unixTimeUTC := time.Unix(privateKey.D.Int64(), 0)
-	fmt.Println("time:",unixTimeUTC)
 	rsak.exportRSAKey(privateKey)
 }
 
+// exportRSAKey is function export privatekey and publickey
 func (RSAKey) exportRSAKey(PrivateKey *rsa.PrivateKey) (string, error) {
 
 	err := rsaKeyTopemFile(PrivateKey)
@@ -36,29 +34,30 @@ func (RSAKey) exportRSAKey(PrivateKey *rsa.PrivateKey) (string, error) {
 }
 
 func rsaKeyTopemFile(PrivateKey *rsa.PrivateKey) error {
-	privkey_bytes := x509.MarshalPKCS1PrivateKey(PrivateKey)
-	privkey_pem := pem.EncodeToMemory(
+	privkeyBytes := x509.MarshalPKCS1PrivateKey(PrivateKey)
+	privkeyPem := pem.EncodeToMemory(
 		&pem.Block{
 			Type:  "RSA PRIVATE KEY",
-			Bytes: privkey_bytes,
+			Bytes: privkeyBytes,
 		},
 	)
-	err := ioutil.WriteFile("privateKey.pem", privkey_pem, 0644)
+	err := ioutil.WriteFile("privateKey.pem", privkeyPem, 0644)
 	if err != nil {
 		return errors.New("err from PrivateKey.pem")
 	}
 	// publicKey
-	publickey_bytes := x509.MarshalPKCS1PublicKey(&PrivateKey.PublicKey)
-	publickey_pem := pem.EncodeToMemory(
+	publickeyBytes := x509.MarshalPKCS1PublicKey(&PrivateKey.PublicKey)
+	publickeyPem := pem.EncodeToMemory(
 		&pem.Block{
 			Type:  "RSA PUBLIC KEY",
-			Bytes: publickey_bytes,
+			Bytes: publickeyBytes,
 		},
 	)
-	err = ioutil.WriteFile("publicKey.pem", publickey_pem, 0644)
+	err = ioutil.WriteFile("publicKey.pem", publickeyPem, 0644)
 	return errors.New("err from publickey.pem")
 }
 
+// ReadPemFile is fuction read RSA key from pravateKey from RSA key in file .pem
 func (RSAKey) ReadPemFile() {
 	pemPrivateKey, err := ioutil.ReadFile("privateKey.pem")
 	if err != nil {
@@ -68,6 +67,7 @@ func (RSAKey) ReadPemFile() {
 	PemtoRSAKey(pemPrivateKey)
 }
 
+//PemtoRSAKey is fuction cover RSA key file pem to RSA key
 func PemtoRSAKey(pemPrivateKey []byte) {
 
 	block, _ := pem.Decode([]byte(pemPrivateKey))
