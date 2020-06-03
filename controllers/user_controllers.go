@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -30,7 +29,6 @@ func (u User) Login(c echo.Context) error {
 		service.GenerateRSAKey(2048)
 		fmt.Println(filepath.Dir("/testgo/privateKey.pe"))
 		// service.ReadPemFile()
-
 
 		return c.String(http.StatusOK, "logined")
 	}
