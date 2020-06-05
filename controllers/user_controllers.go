@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"path/filepath"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -26,8 +25,7 @@ func (u User) Login(c echo.Context) error {
 		log.Println("logined by user")
 		// u.sendMessageToLineNoutify("I cannot forget you remember me")
 		service := services.RSAKey{}
-		service.GenerateRSAKey(2048)
-		fmt.Println(filepath.Dir("/testgo/privateKey.pe"))
+		service.EncyptDataWithPKC()
 		// service.ReadPemFile()
 
 		return c.String(http.StatusOK, "logined")
