@@ -23,9 +23,9 @@ func (u User) Login(c echo.Context) error {
 	password := c.FormValue("password")
 	if username == "peewlaom" && password == "Ws0844038001" {
 		log.Println("logined by user")
-		// u.sendMessageToLineNoutify("I cannot forget you remember me")
+		// u.sendMessageToLineNotify("I cannot forget you remember me")
 		service := services.RSAKey{}
-		service.EncyptDataWithPKC()
+		service.DncyptDataWithPKC()
 		// service.ReadPemFile()
 
 		return c.String(http.StatusOK, "logined")
@@ -34,7 +34,7 @@ func (u User) Login(c echo.Context) error {
 }
 
 // sendMessageToLineNoutify
-func (u User) sendMessageToLineNoutify(message string) {
+func (u User) sendMessageToLineNotify(message string) {
 	payload := strings.NewReader("message=" + message)
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, payload)
