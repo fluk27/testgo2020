@@ -13,7 +13,7 @@ import (
 	"log"
 )
 
-// RSAKey is all fuction use RSA
+// RSAKey is all fuction use RSA key
 type RSAKey struct{}
 
 // GenerateRSAKey is GenerateRSAKey
@@ -101,28 +101,27 @@ func PemtoPrivateKeyOfRSAKey(pemPrivateKey []byte) rsa.PrivateKey {
 //PemtoPublicKeyOfRSAKey is fuction cover RSA key file pem to RSA key
 func PemtoPublicKeyOfRSAKey(pemPublicKey []byte) *rsa.PublicKey{
 
-	block, _ := pem.Decode([]byte(pemPublicKey))
+	block, _ := pem.Decode(pemPublicKey)
 	if block == nil {
 		// return nil, errors.New("failed to parse PEM block containing the key")
 		log.Fatalln("from block :")
 	}
 
-	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	pub, err := x509.ParsePKCS1PublicKey(block.Bytes)
     if err != nil {
-           
+log.Fatalln(err)
     }
 
-    switch pub := pub.(type) {
-    case *rsa.PublicKey:
+    // switch pub := pub.(Type) {
+    // case *rsa.PublicKey:
             return pub
-    default:
-            break // fall through
-	}
-	return nil
+    // default:
+    //         break // fall through
+	// }
+	//return nil
 	// fmt.Println("PublicKey key from pem", public)
 	// return *public
 }
-
 // EncyptData is fuctions encyption RSA key with publicKey
 func (RSA RSAKey) EncyptData(data string) {
 	PublicKey := RSA.ReadPemFilePublicKey()
@@ -147,17 +146,17 @@ func (RSA RSAKey) EncyptDataWithPKC() {
 }
 
 // DncyptDataWithPKC is function decrypt cipherText to PlanText with RSA key type PKC#1
-func (RSA RSAKey) DncyptDataWithPKC()  {
+func (RSA RSAKey) DncyptDataWithPKC() {
 	PrivateKey := RSA.ReadPemFilePrivateKey()
-	resultEncrypt:="XLCkx4SfLPpxC2MPgZxlRDh7tEGWFBR2W88NFW4szey9Kl/MLDpSdBcLZUO8YIOu+tdvzuZxp+V50ibeWdvNj7zEfrid5SWKzdpyQvHPbKGSZ9iAn3jZzrAy1B3QWLZUlWwh10NBnshzP6iYXdfUmxJQ3+DKpqZpufLCSdc2amO4J2qrSoqKUPA0PeIQsBt+iD3bejMTDoRj81+oGwmtlNEyt+wYwCenLgB1sBVTlPQGAQKZD9k8L/M5JTdd/5jGYIKucfz3gsSqJ8ArwJLatkNEFxdFKCHdg6Iq6fuuEj+mjvNUCOWb1EwdFZMxTUrgit6GFQU5dcVsyGkY3wHe7w=="
-	sEnc ,err:= base64.StdEncoding.DecodeString(resultEncrypt)
+	resultEncrypt := "XLCkx4SfLPpxC2MPgZxlRDh7tEGWFBR2W88NFW4szey9Kl/MLDpSdBcLZUO8YIOu+tdvzuZxp+V50ibeWdvNj7zEfrid5SWKzdpyQvHPbKGSZ9iAn3jZzrAy1B3QWLZUlWwh10NBnshzP6iYXdfUmxJQ3+DKpqZpufLCSdc2amO4J2qrSoqKUPA0PeIQsBt+iD3bejMTDoRj81+oGwmtlNEyt+wYwCenLgB1sBVTlPQGAQKZD9k8L/M5JTdd/5jGYIKucfz3gsSqJ8ArwJLatkNEFxdFKCHdg6Iq6fuuEj+mjvNUCOWb1EwdFZMxTUrgit6GFQU5dcVsyGkY3wHe7w=="
+	sEnc, err := base64.StdEncoding.DecodeString(resultEncrypt)
 	if err != nil {
-		log.Fatalln("err from decrypt base64:",err)
+		log.Fatalln("err from decrypt base64:", err)
 	}
 	fmt.Println("CipherText:", sEnc)
-resultToMe,err:=rsa.DecryptPKCS1v15(rand.Reader,&PrivateKey,sEnc)
-if err != nil {
-	log.Fatalln("err from DecryptPKCS1v15:",err)
-}
-fmt.Println("text is decrypt :",string(resultToMe))
+	resultToMe, err := rsa.DecryptPKCS1v15(rand.Reader, &PrivateKey, sEnc)
+	if err != nil {
+		log.Fatalln("err from DecryptPKCS1v15:", err)
+	}
+	fmt.Println("text is decrypt :", string(resultToMe))
 }

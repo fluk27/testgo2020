@@ -24,9 +24,8 @@ func (u User) Login(c echo.Context) error {
 	if username == "peewlaom" && password == "Ws0844038001" {
 		log.Println("logined by user")
 		// u.sendMessageToLineNotify("I cannot forget you remember me")
-		service := services.RSAKey{}
-		service.DncyptDataWithPKC()
-		// service.ReadPemFile()
+		RSAService:=services.RSAKey{}
+		RSAService.EncyptDataWithPKC()
 
 		return c.String(http.StatusOK, "logined")
 	}
