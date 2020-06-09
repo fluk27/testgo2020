@@ -14,7 +14,10 @@ import (
 )
 
 // RSAKey is all fuction use RSA key
-type RSAKey struct{}
+type RSAKey struct{
+	Path string
+	FileName string
+}
 
 // GenerateRSAKey is GenerateRSAKey
 func (rsak RSAKey) GenerateRSAKey(bits int) {
@@ -43,7 +46,7 @@ func rsaKeyTopemFile(PrivateKey *rsa.PrivateKey) error {
 			Bytes: privkeyBytes,
 		},
 	)
-	err := ioutil.WriteFile("privateKey.pem", privkeyPem, 0644)
+	err := ioutil.WriteFile("./services/privateKey.pem", privkeyPem, 0644)
 	if err != nil {
 		return errors.New("err from PrivateKey.pem")
 	}
@@ -60,14 +63,20 @@ func rsaKeyTopemFile(PrivateKey *rsa.PrivateKey) error {
 }
 
 // ReadPemFilePrivateKey is fuction read RSA key from pravateKey from RSA key in file .pem
-func (RSAKey) ReadPemFilePrivateKey() rsa.PrivateKey {
-	pemPrivateKey, err := ioutil.ReadFile("privateKey.pem")
+func (rsak *RSAKey) ReadPemFilePrivateKey() (*rsa.PrivateKey, error) {
+fmt.Println("path",rsak.Path+rsak.FileName)
+	pemPrivateKey, err := ioutil.ReadFile(rsak.Path+rsak.FileName)
 	if err != nil {
-		log.Fatal(err)
+		// log.Fatalln("error read:")
+		return nil, errors.New(err.Error())
 	}
 
-	rsaKey := PemtoPrivateKeyOfRSAKey(pemPrivateKey)
-	return rsaKey
+	rsaKey, err := PemtoPrivateKeyOfRSAKey(pemPrivateKey)
+	if err != nil {
+		// log.Fatalln("error covert:")
+		return nil, errors.New(err.Error())
+	}
+	return rsaKey, nil
 }
 
 //ReadPemFilePublicKey is fuction read RSA key from publicKey from RSA key in file .pem
@@ -82,48 +91,50 @@ func (RSAKey) ReadPemFilePublicKey() rsa.PublicKey {
 }
 
 //PemtoPrivateKeyOfRSAKey is fuction cover RSA key file pem to RSA key
-func PemtoPrivateKeyOfRSAKey(pemPrivateKey []byte) rsa.PrivateKey {
+func PemtoPrivateKeyOfRSAKey(pemPrivateKey []byte) (*rsa.PrivateKey, error) {
 
-	block, _ := pem.Decode([]byte(pemPrivateKey))
+	block, _ := pem.Decode(pemPrivateKey)
 	if block == nil {
 		// return nil, errors.New("failed to parse PEM block containing the key")
-		log.Fatalln("from block :")
+		return nil, errors.New("decode pem error")
 	}
 
 	priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		log.Fatalln("from pemtoPrivateKey", err)
+		log.Fatalln("x509.ParsePKCS1PrivateKey:")
+		return nil, errors.New(err.Error())
 	}
-	fmt.Println("private key from pem", priv)
-	return *priv
+	return priv, nil
 }
 
 //PemtoPublicKeyOfRSAKey is fuction cover RSA key file pem to RSA key
-func PemtoPublicKeyOfRSAKey(pemPublicKey []byte) *rsa.PublicKey{
+func PemtoPublicKeyOfRSAKey(pemPublicKey []byte) *rsa.PublicKey {
 
-	block, _ := pem.Decode(pemPublicKey)
+	block, _ := pem.Decode([]byte(pemPublicKey))
 	if block == nil {
 		// return nil, errors.New("failed to parse PEM block containing the key")
 		log.Fatalln("from block :")
 	}
 
-	pub, err := x509.ParsePKCS1PublicKey(block.Bytes)
-    if err != nil {
-log.Fatalln(err)
-    }
+	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		pub, _ := x509.ParsePKCS1PublicKey(block.Bytes)
+		return pub
+	}
 
-    // switch pub := pub.(Type) {
-    // case *rsa.PublicKey:
-            return pub
-    // default:
-    //         break // fall through
-	// }
-	//return nil
+	switch pub := pub.(type) {
+	case *rsa.PublicKey:
+		return pub
+	default:
+		break // fall through
+	}
+	return nil
 	// fmt.Println("PublicKey key from pem", public)
 	// return *public
 }
-// EncyptData is fuctions encyption RSA key with publicKey
-func (RSA RSAKey) EncyptData(data string) {
+
+// EncyptDataWithOAEP is fuctions encyption RSA key with publicKey of RSA key type OAEP
+func (RSA RSAKey) EncyptDataWithOAEP(data string) {
 	PublicKey := RSA.ReadPemFilePublicKey()
 	resultCipherText, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, &PublicKey, []byte(data), nil)
 	if err != nil {
@@ -135,9 +146,9 @@ func (RSA RSAKey) EncyptData(data string) {
 }
 
 //EncyptDataWithPKC is function encryptData with publicKey of RSA key type PKC
-func (RSA RSAKey) EncyptDataWithPKC() {
+func (RSA RSAKey) EncyptDataWithPKC(massage string) {
 	PublicKey := RSA.ReadPemFilePublicKey()
-	resultEncrypt, err := rsa.EncryptPKCS1v15(rand.Reader, &PublicKey, []byte("test"))
+	resultEncrypt, err := rsa.EncryptPKCS1v15(rand.Reader, &PublicKey, []byte(massage))
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -146,17 +157,18 @@ func (RSA RSAKey) EncyptDataWithPKC() {
 }
 
 // DncyptDataWithPKC is function decrypt cipherText to PlanText with RSA key type PKC#1
-func (RSA RSAKey) DncyptDataWithPKC() {
-	PrivateKey := RSA.ReadPemFilePrivateKey()
-	resultEncrypt := "XLCkx4SfLPpxC2MPgZxlRDh7tEGWFBR2W88NFW4szey9Kl/MLDpSdBcLZUO8YIOu+tdvzuZxp+V50ibeWdvNj7zEfrid5SWKzdpyQvHPbKGSZ9iAn3jZzrAy1B3QWLZUlWwh10NBnshzP6iYXdfUmxJQ3+DKpqZpufLCSdc2amO4J2qrSoqKUPA0PeIQsBt+iD3bejMTDoRj81+oGwmtlNEyt+wYwCenLgB1sBVTlPQGAQKZD9k8L/M5JTdd/5jGYIKucfz3gsSqJ8ArwJLatkNEFxdFKCHdg6Iq6fuuEj+mjvNUCOWb1EwdFZMxTUrgit6GFQU5dcVsyGkY3wHe7w=="
-	sEnc, err := base64.StdEncoding.DecodeString(resultEncrypt)
+func (rsak RSAKey) DncyptDataWithPKC(cipherText string) (string, error) {
+	PrivateKey, err := rsak.ReadPemFilePrivateKey()
+	sEnc, err := base64.StdEncoding.DecodeString(cipherText)
 	if err != nil {
-		log.Fatalln("err from decrypt base64:", err)
+		return "",errors.New("err from decrypt base64 555:"+err.Error())
 	}
 	fmt.Println("CipherText:", sEnc)
-	resultToMe, err := rsa.DecryptPKCS1v15(rand.Reader, &PrivateKey, sEnc)
+	resultToMe, err := rsa.DecryptPKCS1v15(rand.Reader, PrivateKey, sEnc)
 	if err != nil {
-		log.Fatalln("err from DecryptPKCS1v15:", err)
+		// log.Fatalln("err from DecryptPKCS1v15:",err)
+		return "",errors.New("err from DecryptPKCS1v15:"+err.Error())
 	}
 	fmt.Println("text is decrypt :", string(resultToMe))
+	return string(resultToMe), nil
 }
