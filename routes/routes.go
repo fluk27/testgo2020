@@ -1,15 +1,17 @@
 package routes
 
 import (
+	"os"
+
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/acme/autocert"
 )
 
 func init() {
 	//production
-	// port := os.Getenv("PORT")
+	port := os.Getenv("PORT")
 	// dev mode
-	port := "8000"
+	// port := "8000"
 	e := echo.New()
 	UserRoute(e)
 	e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
