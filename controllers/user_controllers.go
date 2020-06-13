@@ -19,12 +19,11 @@ var url string = "https://notify-api.line.me/api/notify"
 var method string = "POST"
 
 func (u *User) Login(c echo.Context) error {
-	SQLS := &services.ManagerSQL{}
-	SQLS.ConnectSQL()
+	// SQLS := &services.ManagerSQL{}
+	// SQLS.ConnectSQL()
 	UM := &models.User{}
 	c.Bind(UM)
 	us := &services.UserServices{}
-	fmt.Println("UM:",UM.Password)
 	ciherText, err := us.Register(UM.Password)
 	if err != nil {
 		return c.String(http.StatusBadRequest, err.Error())

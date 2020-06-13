@@ -20,11 +20,11 @@ func (ManagerSQL) ConnectSQL() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	// const qry = `CREATE TABLE label
-	// (
-	//    id int PRIMARY KEY NOT NULL,
-	//    name varchar(45)
-	// )`
+	const qry = `CREATE TABLE label
+	(
+	   id int PRIMARY KEY NOT NULL,
+	   name varchar(45)
+	)`
 	const deleteDB=`DROP TABLE label`
 	_, err = db.Exec(deleteDB)
 

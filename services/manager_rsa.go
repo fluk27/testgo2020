@@ -87,7 +87,6 @@ func (rsak *RSAKey) ReadPemFilePrivateKey() (*rsa.PrivateKey, error) {
 
 //ReadPemFilePublicKey is fuction read RSA key from publicKey from RSA key in file .pem
 func (rsak *RSAKey) ReadPemFilePublicKey() (*rsa.PublicKey, error) {
-	fmt.Println("file and path:", rsak.PathPublicKey+rsak.FileNamePublicKey)
 	pemPublicKey, err := ioutil.ReadFile(rsak.PathPublicKey + rsak.FileNamePublicKey)
 	if err != nil {
 		// log.Fatal(err)
@@ -158,7 +157,6 @@ func (rsak *RSAKey) EncyptDataWithOAEP(data string) (string, error) {
 		return "", errors.New(err.Error())
 	}
 	sEnc := base64.StdEncoding.EncodeToString([]byte(resultCipherText))
-	// fmt.Println("CipherText:", sEnc)
 	return sEnc, nil
 
 }
@@ -179,7 +177,6 @@ func (rsak *RSAKey) EncyptDataWithPKC(password string, sign string) (string, err
 	}
 
 	sEnc := base64.StdEncoding.EncodeToString(resultEncrypt)
-	// fmt.Println("CipherText:", sEnc)
 	return sEnc, nil
 }
 
@@ -190,13 +187,11 @@ func (rsak *RSAKey) DncyptDataWithPKC(cipherText string) (string, error) {
 	if err != nil {
 		return "", errors.New("err from decrypt base64 555:" + err.Error())
 	}
-	fmt.Println("CipherText:", sEnc)
+
 	resultToMe, err := rsa.DecryptPKCS1v15(rand.Reader, PrivateKey, sEnc)
 	if err != nil {
 		return "", errors.New("err from DecryptPKCS1v15:" + err.Error())
 	}
-	fmt.Println("text is decrypt :", string(resultToMe))
-	// rsak.verifyCipherText(resultToMe)
 	return string(resultToMe), nil
 }
 
@@ -224,8 +219,8 @@ func (rsak *RSAKey) verifyCipherText(sEnc string, massage string) error {
 	//verify
 	PublicKey, err := rsak.ReadPemFilePublicKey()
 	if err != nil {
-		log.Fatalln("ReadPemFilePublicKey from verify :", err)
-		// return " ", err
+		// log.Fatalln("ReadPemFilePublicKey from verify :", err)
+		return err
 	}
 
 	signature, err := base64.StdEncoding.DecodeString(sEnc)
