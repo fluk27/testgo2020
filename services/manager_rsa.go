@@ -1,6 +1,7 @@
 package services
 
 import (
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
@@ -11,6 +12,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 )
 
 // RSAKey is all fuction use RSA key
@@ -84,9 +86,9 @@ func (rsak *RSAKey) ReadPemFilePrivateKey() (*rsa.PrivateKey, error) {
 }
 
 //ReadPemFilePublicKey is fuction read RSA key from publicKey from RSA key in file .pem
-func (RSAKey) ReadPemFilePublicKey() (*rsa.PublicKey, error) {
-
-	pemPublicKey, err := ioutil.ReadFile(RSAKey{}.PathPublicKey + RSAKey{}.FileNamePublicKey)
+func (rsak *RSAKey) ReadPemFilePublicKey() (*rsa.PublicKey, error) {
+	fmt.Println("file and path:", rsak.PathPublicKey+rsak.FileNamePublicKey)
+	pemPublicKey, err := ioutil.ReadFile(rsak.PathPublicKey + rsak.FileNamePublicKey)
 	if err != nil {
 		// log.Fatal(err)
 		return nil, errors.New("error ReadFile publicKey:" + err.Error())
@@ -162,22 +164,27 @@ func (rsak *RSAKey) EncyptDataWithOAEP(data string) (string, error) {
 }
 
 //EncyptDataWithPKC is function encryptData with publicKey of RSA key type PKC
-func (RSA RSAKey) EncyptDataWithPKC(massage string)(string,error) {
-	PublicKey,err := RSA.ReadPemFilePublicKey()
+func (rsak *RSAKey) EncyptDataWithPKC(password string, sign string) (string, error) {
+	PublicKey, err := rsak.ReadPemFilePublicKey()
 	if err != nil {
 		return " ", err
 	}
-	resultEncrypt, err := rsa.EncryptPKCS1v15(rand.Reader, PublicKey, []byte(massage))
+
+	resultEncrypt, err := rsa.EncryptPKCS1v15(rand.Reader, PublicKey, []byte(sign))
 	if err != nil {
 		log.Fatalln(err)
 	}
+	if sign != "" {
+		rsak.SignatureMassage(sign)
+	}
+
 	sEnc := base64.StdEncoding.EncodeToString(resultEncrypt)
 	// fmt.Println("CipherText:", sEnc)
-	return sEnc,nil
+	return sEnc, nil
 }
 
 // DncyptDataWithPKC is function decrypt cipherText to PlanText with RSA key type PKC#1
-func (rsak RSAKey) DncyptDataWithPKC(cipherText string) (string, error) {
+func (rsak *RSAKey) DncyptDataWithPKC(cipherText string) (string, error) {
 	PrivateKey, err := rsak.ReadPemFilePrivateKey()
 	sEnc, err := base64.StdEncoding.DecodeString(cipherText)
 	if err != nil {
@@ -189,5 +196,53 @@ func (rsak RSAKey) DncyptDataWithPKC(cipherText string) (string, error) {
 		return "", errors.New("err from DecryptPKCS1v15:" + err.Error())
 	}
 	fmt.Println("text is decrypt :", string(resultToMe))
+	// rsak.verifyCipherText(resultToMe)
 	return string(resultToMe), nil
+}
+
+// SignatureMassage is function sign data messsage
+func (rsak *RSAKey) SignatureMassage(message string) (string, error) {
+	PrivateKey, err := rsak.ReadPemFilePrivateKey()
+	if err != nil {
+		return "", errors.New(err.Error())
+	}
+	hashed := sha256.Sum256([]byte(message))
+
+	signature, err := rsa.SignPKCS1v15(rand.Reader, PrivateKey, crypto.SHA256, hashed[:])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error from signing: %s\n", err)
+		return "", errors.New("SignPKCS1v15 :" + err.Error())
+	}
+
+	sEnc := base64.StdEncoding.EncodeToString(signature)
+	fmt.Println("Signature:", sEnc)
+	return sEnc, nil
+}
+
+// verifyCipherText is function verify betaween data and sign(hash form sha 256)
+func (rsak *RSAKey) verifyCipherText(sEnc string, massage string) error {
+	//verify
+	PublicKey, err := rsak.ReadPemFilePublicKey()
+	if err != nil {
+		log.Fatalln("ReadPemFilePublicKey from verify :", err)
+		// return " ", err
+	}
+
+	signature, err := base64.StdEncoding.DecodeString(sEnc)
+	if err != nil {
+
+		// log.Fatalln("err from decrypt base64 :" + err.Error())
+		return errors.New("err from decrypt base64 :" + err.Error())
+	}
+
+	hashedData := sha256.Sum256([]byte(massage))
+
+	err = rsa.VerifyPKCS1v15(PublicKey, crypto.SHA256, hashedData[:], signature)
+	if err != nil {
+		// log.Fatalln("Error from verification:", err.Error())
+		return errors.New("VerifyPKCS1v15:" + err.Error())
+	}
+
+	fmt.Println("verify successfully")
+	return nil
 }

@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/labstack/echo/v4"
+	"github.com/peewlaom/testgo/models"
 	"github.com/peewlaom/testgo/services"
 )
 
@@ -19,22 +19,17 @@ var url string = "https://notify-api.line.me/api/notify"
 var method string = "POST"
 
 func (u *User) Login(c echo.Context) error {
-	username := c.FormValue("username")
-	cipherText := c.FormValue("password")
-	RSAService := &services.RSAKey{}
-	// RSAService.PathPrivateKey= "./"
-	RSAService.FileNamePrivateKey = "privateKey.pem"
-	RSAService.GenerateRSAKey(256)
-	// password, err := RSAService.DncyptDataWithPKC(cipherText)
-	// if err != nil {
-	// 	return c.String(http.StatusBadRequest, err.Error())
-	// }
-	if username == "peewlaom" && cipherText== "Ws0844038001" {
-		log.Println("logined by user")
-		// u.sendMessageToLineNotify("I cannot forget you remember me")
-		return c.String(http.StatusOK, "logined")
+	SQLS := &services.ManagerSQL{}
+	SQLS.ConnectSQL()
+	UM := &models.User{}
+	c.Bind(UM)
+	us := &services.UserServices{}
+	fmt.Println("UM:",UM.Password)
+	ciherText, err := us.Register(UM.Password)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusOK, map[string]string{"masseage": "login failed"})
+	return c.String(http.StatusOK, ciherText)
 }
 
 // sendMessageToLineNoutify
@@ -54,5 +49,5 @@ func (u User) sendMessageToLineNotify(message string) {
 		// return nil, err
 	}
 	defer res.Body.Close()
-	
+
 }
