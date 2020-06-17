@@ -6,33 +6,41 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
+	"github.com/mitchellh/mapstructure"
 	"github.com/peewlaom/testgo/models"
 	"github.com/peewlaom/testgo/services"
 )
 
 // User is all fuction manager user
-type User struct {
+type UserController struct {
 }
 
 var header map[string]string
 var url string = "https://notify-api.line.me/api/notify"
 var method string = "POST"
 
-func (u *User) Login(c echo.Context) error {
+func (u *UserController) Register(c echo.Context) error {
 	SQLS := &services.ManagerSQL{}
-	SQLS.ConnectSQL()
-	UM := &models.User{}
-	c.Bind(UM)
-	us := &services.UserServices{}
-	ciherText, err := us.Register(UM.Password)
+	// err:=SQLS.CreateTable("./models/sql/","create_table.sql")
+	var UM []models.User
+	// err:=SQLS.DropTable()
+	err := SQLS.InsertDataToTableCar()
 	if err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	return c.String(http.StatusOK, ciherText)
+
+	result, err := SQLS.ReadDataFromTableCar()
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	mapstructure.Decode(result, &UM)
+	//data, _ := json.Marshal(result)
+	return c.JSON(http.StatusCreated, UM)
 }
 
 // sendMessageToLineNoutify
-func (u User) sendMessageToLineNotify(message string) {
+func (u UserController) sendMessageToLineNotify(message string) {
 	payload := strings.NewReader("message=" + message)
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, payload)

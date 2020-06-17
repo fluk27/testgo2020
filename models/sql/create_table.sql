@@ -5,7 +5,7 @@
 	   Custlastname varchar(255),
 	   Custusername varchar(255),
 	   Custpassword text,
-	   statusPDPA  mood
+	   statusPDPA  boolean DEFAULT TRUE
 	);
 
 	CREATE TABLE Car
@@ -15,4 +15,17 @@
 	   carType moo,
 	   CustID SERIAL,
 	   FOREIGN KEY (CustID) REFERENCES Custromer(CustID)
+	);
+
+	CREATE TABLE Expenditure
+	(
+		expenditureID SERIAL PRIMARY KEY,
+		expenditureName VARCHAR(255),
+		expenditureType boolean,
+		expenditureCount INTEGER,
+		expenditurePrice NUMERIC(7,0),
+		expenditureDate TIMESTAMP,
+		CarID SERIAL,
+		FOREIGN KEY (CarID) REFERENCES Car (CarID)
+
 	);
