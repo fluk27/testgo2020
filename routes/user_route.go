@@ -1,10 +1,6 @@
 package routes
 
 import (
-	"log"
-	"net/http"
-
-	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/labstack/echo/v4"
 	"github.com/peewlaom/testgo/controllers"
 )
@@ -14,12 +10,7 @@ func UserRoute(route *echo.Echo) {
 	uc := &controllers.UserController{}
 	userGroup := route.Group("/user")
 	// userGroup.Use(middleware.Logger())
-	userGroup.GET("/testCert", func(c echo.Context) error {
-		elastic, _ := elasticsearch.NewDefaultClient()
-		log.Println(elasticsearch.Version)
-		log.Println(elastic.Info())
-		return c.String(http.StatusOK, "test https certs")
-	})
+	userGroup.GET("/getInfoElasticsearch", uc.GetInfoElasticsreach)
 	userGroup.POST("/register", uc.Register)
 	// userGroup.POST("/login")
 	// userGroup.PUT("/editDataPerson")

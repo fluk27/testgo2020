@@ -1,10 +1,14 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
+	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/labstack/echo/v4"
 	"github.com/mitchellh/mapstructure"
 	"github.com/peewlaom/testgo/models"
@@ -57,4 +61,41 @@ func (u UserController) sendMessageToLineNotify(message string) {
 	}
 	defer res.Body.Close()
 
+}
+
+func (u *UserController) GetInfoElasticsreach(c echo.Context) error {
+	es, err := elasticsearch.NewDefaultClient()
+	if err != nil {
+		log.Fatalf("Error creating the client: %s", err)
+	}
+
+	// res, err := es.Info()
+	// if err != nil {
+	// 	log.Fatalf("Error getting response: %s", err)
+	// }
+	// var b strings.Builder
+	// b.WriteString(`{"title" : "`)
+	// b.WriteString("Test One")
+	// b.WriteString(`"}`)
+	req := esapi.IndexRequest{
+		Index:      "test",
+		DocumentID: "12",
+		Body:strings.NewReader(`{"title":"Test"}`),
+		Refresh:    "true",
+	}
+	log.Println("elasticsearch=",req.Body)
+	res, err := req.Do(context.Background(), es)
+	if err != nil {
+		log.Fatalf("Error getting response: %s", err)
+	}
+	
+	res, err = es.Search(
+		es.Search.WithContext(context.Background()),
+		es.Search.WithIndex("test"),
+		// es.Search.WithBody(&buf),
+		es.Search.WithTrackTotalHits(true),
+		es.Search.WithPretty(),
+	  )
+	defer res.Body.Close()
+	return c.JSON(http.StatusOK, res)
 }
