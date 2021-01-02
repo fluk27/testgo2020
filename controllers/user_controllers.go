@@ -80,22 +80,28 @@ func (u *UserController) GetInfoElasticsreach(c echo.Context) error {
 	req := esapi.IndexRequest{
 		Index:      "test",
 		DocumentID: "12",
-		Body:strings.NewReader(`{"title":"Test"}`),
+		Body:       strings.NewReader(`{"title":"Test"}`),
 		Refresh:    "true",
 	}
-	log.Println("elasticsearch=",req.Body)
+	log.Println("elasticsearch=", req.Body)
 	res, err := req.Do(context.Background(), es)
 	if err != nil {
 		log.Fatalf("Error getting response: %s", err)
 	}
-	
+
 	res, err = es.Search(
 		es.Search.WithContext(context.Background()),
 		es.Search.WithIndex("test"),
 		// es.Search.WithBody(&buf),
 		es.Search.WithTrackTotalHits(true),
 		es.Search.WithPretty(),
-	  )
+	)
 	defer res.Body.Close()
 	return c.JSON(http.StatusOK, res)
+}
+
+func (UserController)TestMSSQL(c echo.Context) error{
+	MS := &services.ManagerMSSQL{}
+	res,_:=MS.ReadReceive()
+return c.JSON(http.StatusOK,res)
 }

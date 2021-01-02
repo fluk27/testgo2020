@@ -13,5 +13,6 @@ func UserRoute(route *echo.Echo) {
 	userGroup.GET("/getInfoElasticsearch", uc.GetInfoElasticsreach)
 	userGroup.POST("/register", uc.Register)
 	// userGroup.POST("/login")
+	route.GET("/testMSSQL",uc.TestMSSQL)
 	// userGroup.PUT("/editDataPerson")
 }
