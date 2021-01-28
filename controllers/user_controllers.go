@@ -9,10 +9,10 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"github.com/fluk27/testgo/models"
+	"github.com/fluk27/testgo/services"
 	"github.com/labstack/echo/v4"
 	"github.com/mitchellh/mapstructure"
-	"github.com/peewlaom/testgo/models"
-	"github.com/peewlaom/testgo/services"
 )
 
 // User is all fuction manager user

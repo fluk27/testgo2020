@@ -1,4 +1,4 @@
-module github.com/peewlaom/testgo
+module github.com/fluk27/testgo
 
 go 1.14
 
