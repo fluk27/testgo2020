@@ -1,4 +1,4 @@
-module github.com/fluk27/testgo
+module github.com/fluk27/testgo2020
 
 go 1.14
 
